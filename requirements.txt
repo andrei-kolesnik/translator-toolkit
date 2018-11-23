@@ -10,6 +10,7 @@ decorator==4.2.1
 entrypoints==0.2.3    
 Flask==1.0.2    
 gmplot==1.2.0    
+gunicorn==19.9.0
 h5py==2.8.0    
 html5lib==1.0.1    
 idna==2.6      
