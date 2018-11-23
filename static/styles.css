@@ -3,12 +3,12 @@
     background-color: rgb(60, 180, 196);
 }
 
-table.concordance, table.freq {
+table.basic {
     border: 1px solid rgb(88, 88, 88);
     border-collapse: collapse;
 }
 
-table.concordance td, table.freq td {
+table.basic td {
     border: 1px dashed rgb(88, 88, 88);
 }
 

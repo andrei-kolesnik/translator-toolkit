@@ -22,6 +22,11 @@ from nltk.corpus import PlaintextCorpusReader
 corpus_loc = './data/'
 docs = nltk.corpus.PlaintextCorpusReader(corpus_loc, '.*\.txt')
 docs_processed = nltk.Text(docs.words())
+sents = []
+cnt = 1
+for sent in docs.sents():
+    sents.append({"index": cnt, "sent": ' '.join(sent)})
+    cnt = cnt+1
 
 excl = ['a', 'after', 'all', 'also', 'an', 'and', 'another', 'any', 'are', 'as', 'at', 'away', 'be', 'been', 'beforehand', 'being', 'both', 'but', 'by', 'can', 'cannot', 'do', 'does', 'each', 'for', 'from', 'further', 'furthermore', 'has', 'have', 'having', 'here', 'hereby', 'hereinabove', 'hereinbefore', 'heretofore', 'how', 'if', 'in', 'into', 'is', 'it', 'its', 'may', 'more', 'no', 'non', 'nor', 'not', 'of', 'off', 'on', 'only', 'or', 'other', 'out', 'own', 'same', 'since', 'so', 'such', 'than', 'that', 'the', 'their', 'then', 'there', 'therebetween', 'thereby', 'therein', 'thereof', 'thereto', 'they', 'this', 'those', 'thus', 'to', 'too', 'up', 'via', 'was', 'what', 'when', 'where', 'wherein', 'whether', 'which', 'whose', 'with', 'within']
 
@@ -49,7 +54,7 @@ class capt_stdout:
 # Create route that renders index.html template
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", sents = sents)
 
 @app.route('/freq')
 def freq(): 

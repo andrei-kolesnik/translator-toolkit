@@ -27,13 +27,20 @@
         </ul>
       </div>
       <div class="col-sm-2">
-        <div id="freq_div"></div>
+        <div id="left1"></div>
       </div>
       <div class="col-sm-8">
-        <b>Unique Contexts:</b>
-        <div id="context_div"></div>
-        <b>All Concordance:</b>
-        <div id="concordance_div"></div>
+        <div id="right1">
+        <table class="basic">
+          {% for sent in sents %}
+          <tr>
+            <td class="center">{{ sent.index }}</td>
+            <td class="left">{{ sent.sent }}</td>
+          </tr>
+          {% endfor %}          
+        </table>
+        </div>
+        <div id="right2"></div>
       </div>
     </div>
   </div>
