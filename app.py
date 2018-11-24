@@ -7,6 +7,7 @@ import matplotlib as pl
 import nltk
 from nltk import FreqDist
 nltk.download('punkt')
+from nltk import word_tokenize,sent_tokenize
 
 from flask import (
     Flask,
