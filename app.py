@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib as pl
 import nltk
 from nltk import FreqDist
+nltk.download('punkt')
 
 from flask import (
     Flask,
