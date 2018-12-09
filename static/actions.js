@@ -25,7 +25,8 @@ $(document).ready(function() {
                 td1.setAttribute('class', "left");
                 td2.setAttribute('class', "right");
 //                td1.innerHTML = "<a href=\"#\" class=\"word\" onclick=\"concordance('"+field[0]+"', "+field[1]+')">'+field[0]+'</a>';
-                td1.innerHTML = '<a href="/s1/'+field[0]+'"' + " class=\"word\" onclick=\"concordance('"+field[0]+"', "+field[1]+')">'+field[0]+'</a>';
+//                td1.innerHTML = '<a href="/s1/' + field[0] + '"' + " class=\"word\" onclick=\"concordance('" + field[0] + "', " + field[1] + ')">' + field[0] + '</a>';
+                td1.innerHTML = '<a href="/s1/'+field[0]+'"' + ' class="word">'+field[0]+'</a>';
                 td2.appendChild(document.createTextNode(field[1]));
             });
             var div = document.getElementById('left1');
@@ -42,7 +43,8 @@ $(document).ready(function() {
                 var tr = tbl.insertRow();
                 var td1 = tr.insertCell();
                 td1.setAttribute('class', "left");
-                td1.appendChild(document.createTextNode(field.term));
+                td1.innerHTML = '<a href="/s1/' + encodeURIComponent(field.term) + '"' + ' class="word">' + field.term + '</a>';
+//                td1.appendChild(document.createTextNode(field.term));
             });
             var div = document.getElementById('left1');
             div.innerHTML = '<b>Collocations:</b>';

@@ -13,7 +13,7 @@
             {% for sent in sents %}
             <tr>
                <td class="center">{{ sent.index }}</td>
-               <td class="left">{{ sent.sent }}</td>
+               <td class="left">{{ sent.sent|safe }}</td>
             </tr>
             {% endfor %}          
          </table>

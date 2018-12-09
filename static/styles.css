@@ -31,11 +31,6 @@ td.right {
     padding-right: 2px;
 }
 
-ul.vmenu {
-    list-style: none;
-}
-
-.plot-row>div {
-    display: inline-block;
-    vertical-align: top;
+.sel {
+    background-color: darkgrey;
 }

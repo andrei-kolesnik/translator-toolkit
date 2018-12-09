@@ -12,7 +12,7 @@ import pandas as pd
 import matplotlib as pl
 import nltk
 from nltk import FreqDist
-#nltk.download('punkt')
+nltk.download('punkt')
 from nltk import word_tokenize,sent_tokenize
 from nltk.corpus import PlaintextCorpusReader
 
@@ -128,9 +128,14 @@ def sents1(word = ''):
     for sent in docs.raw().split("\n"):
         sent = sent.strip()
         if len(sent) > 0 and not sent.isspace():
-            if len(word) == 0 or sent.find(word) > -1:
+            if len(word) > 0:
+                at = sent.find(word)
+                if at > -1:
+                    sent = sent[:at] + '<span class="sel">' + word + '</span>' + sent[at+len(word)]
+                    sents.append({"index": cnt, "sent": sent})
+            else:
                 sents.append({"index": cnt, "sent": sent})
-            cnt = cnt+1
+            cnt = cnt + 1
     return render_template("sents.html", globs = Globs, sents = sents)
 
 
@@ -189,7 +194,7 @@ def collocations(count = 25):
         collocations_output = out.string
     col_data = []
     for c in collocations_output.split(';'):
-        col_data.append({"term": c})
+        col_data.append({"term": c.strip()})
     return jsonify(col_data)
 
 
