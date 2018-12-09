@@ -3,8 +3,16 @@
 {% block content %}    
 <div class="row">
    <div class="col-sm-2">
-      <div id="left1"></div>
-      <div id="left2"></div>
+      <button type="button" id="btn-words" class="btn btn-info hid" data-toggle="collapse" data-target="#left1">
+         <i class="fas fa-arrows-alt-v"></i>
+         <span>Words</span>
+      </button>
+      <div id="left1" class="collapse"></div>
+      <button type="button" id="btn-collocations" class="btn btn-info hid" data-toggle="collapse" data-target="#left2">
+         <i class="fas fa-arrows-alt-v"></i>
+         <span>Collocations</span>
+      </button>
+      <div id="left2" class="collapse"></div>
       <div id="left3"></div>
    </div>
    <div class="col-sm-10">

@@ -3,6 +3,10 @@
     background-color: rgb(60, 180, 196);
 }
 
+.btn {
+    margin: 3px;
+}
+
 table.basic {
     border: 1px solid rgb(88, 88, 88);
     border-collapse: collapse;
@@ -33,4 +37,8 @@ td.right {
 
 .sel {
     background-color: darkgrey;
+}
+
+.hid {
+    display: none;
 }

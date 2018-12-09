@@ -16,7 +16,10 @@
          {% endfor %}          
       </table>
       <div id="right1">
-         <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#newdoc">Upload</button>
+         <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#newdoc">
+            <i class="fas fa-arrows-alt-v"></i>
+            <span>Upload</span>
+         </button>
          <div id="newdoc" class="collapse">
             <form action="/upload" enctype="multipart/form-data" method="post" accept-charset="utf-8">
             <div class="form-group">

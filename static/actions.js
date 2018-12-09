@@ -26,12 +26,14 @@ $(document).ready(function() {
                 td2.setAttribute('class', "right");
 //                td1.innerHTML = "<a href=\"#\" class=\"word\" onclick=\"concordance('"+field[0]+"', "+field[1]+')">'+field[0]+'</a>';
 //                td1.innerHTML = '<a href="/s1/' + field[0] + '"' + " class=\"word\" onclick=\"concordance('" + field[0] + "', " + field[1] + ')">' + field[0] + '</a>';
-                td1.innerHTML = '<a href="/s1/'+field[0]+'"' + ' class="word">'+field[0]+'</a>';
+                td1.innerHTML = '<a href="/s1/' + encodeURIComponent(field[0]) + '"' + ' class="word">' + field[0] + '</a>';
                 td2.appendChild(document.createTextNode(field[1]));
             });
+            $("#btn-words").removeClass("hid");
             var div = document.getElementById('left1');
             div.innerHTML = '';
             div.appendChild(tbl);
+            $("#btn-words").click();
         });
     });
 
@@ -46,9 +48,10 @@ $(document).ready(function() {
                 td1.innerHTML = '<a href="/s1/' + encodeURIComponent(field.term) + '"' + ' class="word">' + field.term + '</a>';
 //                td1.appendChild(document.createTextNode(field.term));
             });
-            var div = document.getElementById('left1');
-            div.innerHTML = '<b>Collocations:</b>';
+            $("#btn-collocations").removeClass("hid");
+            var div = document.getElementById('left2');
             div.appendChild(tbl);
+            $("#btn-collocations").click();
         });
     });
 
