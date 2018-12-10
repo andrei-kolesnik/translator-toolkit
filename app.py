@@ -13,6 +13,8 @@ import matplotlib as pl
 import nltk
 from nltk import FreqDist
 nltk.download('punkt')
+nltk.download('words')
+from nltk.corpus import words
 from nltk import word_tokenize,sent_tokenize
 from nltk.corpus import PlaintextCorpusReader
 
