@@ -154,7 +154,7 @@ def sents2():
 
 ################################################################################
 @app.route('/freq')
-def freq(): 
+def freq():
     global docs, docs_processed
     check()
     fdist = FreqDist()
@@ -165,6 +165,22 @@ def freq():
             fdist[word] += 1
     freq_sorted = sorted(fdist.items(), key=lambda item: (item[1], item[0]), reverse=True)
     return jsonify(freq_sorted[:50])
+
+
+################################################################################
+@app.route('/unusual')
+def unusual():
+    global docs, docs_processed
+    check()
+    text_vocab = set(w.lower() for w in docs.words() if w.isalpha())
+    english_vocab = set(w.lower() for w in nltk.corpus.words.words())
+    unusual = text_vocab.difference(english_vocab)
+    fdist = FreqDist()
+    for word in docs.words():
+        if word in unusual:
+            fdist[word] += 1
+    freq_sorted = sorted(fdist.items())
+    return jsonify(freq_sorted)
 
 
 ################################################################################

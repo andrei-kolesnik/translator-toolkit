@@ -17,16 +17,17 @@
    </div>
    <div class="col-sm-10">
       <div id="right1">
+      </div>
+      <div id="right2">
          <table class="basic">
             {% for sent in sents %}
             <tr>
                <td class="center">{{ sent.index }}</td>
                <td class="left">{{ sent.sent|safe }}</td>
             </tr>
-            {% endfor %}          
+            {% endfor %}
          </table>
       </div>
-      <div id="right2"></div>
    </div>
    </div> <!-- row -->
 {% endblock %}
