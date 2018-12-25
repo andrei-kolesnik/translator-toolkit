@@ -4,12 +4,13 @@ from os import listdir
 from os.path import isfile, join 
 import sys
 from io import StringIO
+from collections import defaultdict
 from flask import request
 from werkzeug.utils import secure_filename
 import scipy
-import numpy as np
-import pandas as pd
-import matplotlib as pl
+# import numpy as np
+# import pandas as pd
+# import matplotlib as pl
 import nltk
 from nltk import FreqDist
 nltk.download('punkt')
@@ -35,7 +36,7 @@ Globs = {
     'file': '',
     'dir': './data/'
 }
-global docs, docs_processed, sents
+global text, text_proc, sents, text_detailed
 
 excl = ['a', 'after', 'all', 'also', 'an', 'and', 'another', 'any', 'are', 'as', 'at', 'away', 'be', 'been', 'beforehand', 'being', 'both', 'but', 'by', 'can', 'cannot', 'do', 'does', 'each', 'for', 'from', 'further', 'furthermore', 'has', 'have', 'having', 'here', 'hereby', 'hereinabove', 'hereinbefore', 'heretofore', 'how', 'if', 'in', 'into', 'is', 'it', 'its', 'may', 'more', 'no', 'non', 'nor', 'not', 'of', 'off', 'on', 'only', 'or', 'other', 'out', 'own', 'same', 'since', 'so', 'such', 'than', 'that', 'the', 'their', 'then', 'there', 'therebetween', 'thereby', 'therein', 'thereof', 'thereto', 'they', 'this', 'those', 'thus', 'to', 'too', 'up', 'via', 'was', 'what', 'when', 'where', 'wherein', 'whether', 'which', 'whose', 'with', 'within']
 
@@ -70,9 +71,26 @@ def check():
 
 
 def openfile(filename):
-    global docs, docs_processed
-    docs = nltk.corpus.PlaintextCorpusReader(Globs['dir'], Globs['file'])
-    docs_processed = nltk.Text(docs.words())
+    global Globs, text, text_proc, text_detailed
+    Globs['file'] = filename
+    text = nltk.corpus.PlaintextCorpusReader(Globs['dir'], Globs['file'])
+    text_proc = nltk.Text(text.words())
+# extra part
+    stemmer = nltk.PorterStemmer() # nltk.LancasterStemmer()
+    text_detailed = []
+    cnt = 1
+    for sent in text.raw().split("\n"):
+        sent = sent.strip()
+        if len(sent) > 0 and not sent.isspace():
+            tokenized = nltk.word_tokenize(sent)
+            words = []
+            stems = []
+            for tok in tokenized:
+                words.append(tok)  # .lower()
+                stems.append(stemmer.stem(tok))
+            text_detailed.append({"index": cnt, "sent": sent, "words": words, "stems": stems})
+            cnt = cnt + 1
+
 
 ################################################################################
 # Routs
@@ -113,8 +131,6 @@ def upload_file():
 ################################################################################
 @app.route("/f/<name>")
 def show_file(name):
-    global docs, docs_processed
-    Globs['file'] = name
     openfile(name)
     return sents1()
 
@@ -122,12 +138,12 @@ def show_file(name):
 ################################################################################
 @app.route("/s1")
 @app.route("/s1/<word>")
-def sents1(word = ''):
-    global docs, sents
+def sents1(word=''):
+    global text, sents
     check()
     sents = []
     cnt = 1
-    for sent in docs.raw().split("\n"):
+    for sent in text.raw().split("\n"):
         sent = sent.strip()
         if len(sent) > 0 and not sent.isspace():
             if len(word) > 0:
@@ -144,41 +160,84 @@ def sents1(word = ''):
 ################################################################################
 @app.route("/s2")
 def sents2():
-    global docs, sents
+    global text, sents
     check()
     sents = []
     cnt = 1
-    for sent in docs.sents():
+    for sent in text.sents():
         sents.append({"index": cnt, "sent": ' '.join(sent)})
         cnt = cnt+1
     return render_template("sents.html", globs = Globs, sents = sents)
 
 
 ################################################################################
-@app.route('/freq')
-def freq():
-    global docs, docs_processed
-    check()
-    fdist = FreqDist()
-    for word in docs.words():
-        word = word.lower()
-        sans_letters = re.sub(r'[^a-zA-Z]', '', word)
-        if (len(word) > 2) and (word not in excl) and (len(word) == len(sans_letters)):
-            fdist[word] += 1
-    freq_sorted = sorted(fdist.items(), key=lambda item: (item[1], item[0]), reverse=True)
-    return jsonify(freq_sorted[:50])
+@app.route("/s3")
+@app.route("/s3/<stem>")
+def sents3(stem=''):
+    global text_detailed
+    sents = []
+    for sent in text_detailed:
+        # at = sent.find(word)
+        # if at > -1:
+        #     sent = sent[:at] + '<span class="sel">' + word + '</span>' + sent[at+len(word)]
+        if stem in sent['stems']:
+            for i, s in enumerate(sent['stems']):
+                if s == stem:
+                    sent['words'][i] = '<span class="sel">' + sent['words'][i] + '</span>'
+            sents.append({
+                    'index': sent['index'],
+                    'sent': ' '.join(sent['words']) # sent['sent']
+                })
+    return jsonify(sents)
 
+
+################################################################################
+@app.route('/freq')
+# def freq():
+#     global text, text_proc
+#     check()
+#     fdist = FreqDist()
+#     for word in text.words():
+#         word = word.lower()
+#         sans_letters = re.sub(r'[^a-zA-Z]', '', word)
+#         if (len(word) > 2) and (word not in excl) and (len(word) == len(sans_letters)):
+#             fdist[word] += 1
+#     freq_sorted = sorted(fdist.items(), key=lambda item: (item[1], item[0]), reverse=True)
+#     return jsonify(freq_sorted[:50])
+def freq():
+    global text, text_proc
+    check()
+    tokens = nltk.word_tokenize(text.raw())
+    stemmer = nltk.PorterStemmer() # nltk.LancasterStemmer()
+    dd = defaultdict(list)
+    fdist = FreqDist()
+    prog = re.compile(r'^[a-zA-Z][a-zA-Z\\\-]+[a-zA-Z]$')
+    for tok in tokens:
+        tok = tok.lower()
+        stem = stemmer.stem(tok)
+        if prog.match(tok) and tok not in excl:
+            if tok not in dd[stem]:
+                dd[stem].append(tok)
+            fdist[stem] += 1
+    result = []
+    for stem in sorted(dd.keys()):
+            result.append({
+                "words": ' '.join(dd[stem]),
+                "count": fdist[stem],
+                "stem": stem
+            })
+    return jsonify(result)
 
 ################################################################################
 @app.route('/unusual')
 def unusual():
-    global docs, docs_processed
+    global text, text_proc
     check()
-    text_vocab = set(w.lower() for w in docs.words() if w.isalpha())
+    text_vocab = set(w.lower() for w in text.words() if w.isalpha())
     english_vocab = set(w.lower() for w in nltk.corpus.words.words())
     unusual = text_vocab.difference(english_vocab)
     fdist = FreqDist()
-    for word in docs.words():
+    for word in text.words():
         if word in unusual:
             fdist[word] += 1
     freq_sorted = sorted(fdist.items())
@@ -189,9 +248,9 @@ def unusual():
 @app.route('/concordance/<word>')
 @app.route('/concordance/<word>/<int:count>')
 def concordance(word, count = 25): 
-    global docs, docs_processed
+    global text, text_proc
     check()
-    con_list = docs_processed.concordance_list(word, width=80, lines=count)
+    con_list = text_proc.concordance_list(word, width=80, lines=count)
     con_data = []
     for c in con_list:
         con_data.append({
@@ -205,10 +264,10 @@ def concordance(word, count = 25):
 @app.route('/collocations')
 @app.route('/collocations/<int:count>')
 def collocations(count = 25): 
-    global docs, docs_processed
+    global text, text_proc
     check()
     with capt_stdout() as out:
-        docs_processed.collocations(num = count)
+        text_proc.collocations(num = count)
         collocations_output = out.string
     col_data = []
     for c in collocations_output.split(';'):
@@ -219,10 +278,10 @@ def collocations(count = 25):
 ################################################################################
 @app.route('/contexts/<word>')
 def contexts(word): 
-    global docs, docs_processed
+    global text, text_proc
     check()
     with capt_stdout() as out:
-        docs_processed.common_contexts([word])
+        text_proc.common_contexts([word])
         common_contexts_output = out.string
     con_data = []
     for c in common_contexts_output.split():
@@ -233,6 +292,57 @@ def contexts(word):
                 "query": word,
                 "right_print": c[ind+1:]})
     return jsonify(con_data)
+
+
+################################################################################
+@app.route('/step1')
+def step1():
+    global Globs
+    files = []
+    for filename in listdir(Globs['dir']):
+        fullname = join(Globs['dir'], filename)
+        if isfile(fullname):
+            f = open(fullname)
+            files.append({
+                "name": filename,
+                "first_line": f.readline()
+            })
+            f.close()
+    return render_template("steps.html", files=files, globs=Globs)
+
+@app.route('/step2/<filename>')
+def step2(filename):
+    global text
+    openfile(filename)
+    result = text.raw().replace('\r\n', '<br>')
+    return jsonify(result)
+
+
+@app.route('/step3')
+def step3():
+    global text
+    tokens = nltk.word_tokenize(text.raw())
+    stemmer = nltk.PorterStemmer() # nltk.LancasterStemmer()
+    dd = defaultdict(list)
+    fdist = FreqDist()
+    result = []
+    prog = re.compile(r'^[a-zA-Z][a-zA-Z\\\-]+[a-zA-Z]$')
+    for tok in tokens:
+        tok = tok.lower()
+        # sans_letters = re.sub(r'[^a-zA-Z\-\\]', '', tok)
+        stem = stemmer.stem(tok)
+        # if len(tok) == len(sans_letters) and tok not in excl:
+        if prog.match(tok) and tok not in excl:
+            if tok not in dd[stem]:
+                dd[stem].append(tok)
+            fdist[stem] += 1
+    for stem in sorted(dd.keys()):
+            result.append({
+                "stem": stem,
+                "count": fdist[stem],
+                "words": ' '.join(dd[stem])
+            })
+    return jsonify(result)
 
 
 ################################################################################

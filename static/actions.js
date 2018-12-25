@@ -26,8 +26,10 @@ $(document).ready(function() {
                 td2.setAttribute('class', "right");
 //                td1.innerHTML = "<a href=\"#\" class=\"word\" onclick=\"concordance('"+field[0]+"', "+field[1]+')">'+field[0]+'</a>';
 //                td1.innerHTML = '<a href="/s1/' + field[0] + '"' + " class=\"word\" onclick=\"concordance('" + field[0] + "', " + field[1] + ')">' + field[0] + '</a>';
-                td1.innerHTML = '<a href="/s1/' + encodeURIComponent(field[0]) + '"' + ' class="word">' + field[0] + '</a>';
-                td2.appendChild(document.createTextNode(field[1]));
+//                td1.innerHTML = '<a href="/s1/' + encodeURIComponent(field.stem) + '"' + ' class="word">' + field.words + '</a>';
+//                td1.innerHTML = '<a href="#" class="word" name="' + field.stem + '">' + field.words + '</a>';
+                td1.innerHTML = "<a href=\"#\" class=\"word\" onclick=\"s3('" + field.stem + "', '" + field.words + "')\">" + field.words + '</a>';
+                td2.appendChild(document.createTextNode(field.count));
             });
             $("#btn-words").removeClass("hid");
             var div = document.getElementById('left1');
@@ -96,6 +98,26 @@ function concordance(word, count) {
         });
         var div = document.getElementById('right2');
         div.innerHTML = '<b>All Concordance:</b>';
+        div.appendChild(tbl);
+    });
+}
+
+function s3(stem, words) {
+    $.getJSON("/s3/" + stem, function (result) {
+        var tbl = document.createElement('table');
+        tbl.setAttribute('class', "basic");
+        $.each(result, function (i, field) {
+            var tr = tbl.insertRow();
+            var td1 = tr.insertCell();
+            var td2 = tr.insertCell();
+            td1.setAttribute('class', "center");
+            td2.setAttribute('class', "left");
+            td1.appendChild(document.createTextNode(field.index));
+//            td2.appendChild(document.createTextNode(field.sent));
+            td2.innerHTML = field.sent;
+        });
+        var div = document.getElementById('right2');
+        div.innerHTML = '<b>' + words + '</b>';
         div.appendChild(tbl);
     });
 }
