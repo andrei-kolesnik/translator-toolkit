@@ -36,7 +36,7 @@ Globs = {
     'file': '',
     'dir': './data/'
 }
-global text, text_proc, sents, text_detailed
+global text, text_proc, sents, text_detailed, text_vocab, english_vocab
 
 excl = ['a', 'after', 'all', 'also', 'an', 'and', 'another', 'any', 'are', 'as', 'at', 'away', 'be', 'been', 'beforehand', 'being', 'both', 'but', 'by', 'can', 'cannot', 'do', 'does', 'each', 'for', 'from', 'further', 'furthermore', 'has', 'have', 'having', 'here', 'hereby', 'hereinabove', 'hereinbefore', 'heretofore', 'how', 'if', 'in', 'into', 'is', 'it', 'its', 'may', 'more', 'no', 'non', 'nor', 'not', 'of', 'off', 'on', 'only', 'or', 'other', 'out', 'own', 'same', 'since', 'so', 'such', 'than', 'that', 'the', 'their', 'then', 'there', 'therebetween', 'thereby', 'therein', 'thereof', 'thereto', 'they', 'this', 'those', 'thus', 'to', 'too', 'up', 'via', 'was', 'what', 'when', 'where', 'wherein', 'whether', 'which', 'whose', 'with', 'within']
 
@@ -71,7 +71,7 @@ def check():
 
 
 def openfile(filename):
-    global Globs, text, text_proc, text_detailed
+    global Globs, text, text_proc, text_detailed, text_vocab, english_vocab
     Globs['file'] = filename
     text = nltk.corpus.PlaintextCorpusReader(Globs['dir'], Globs['file'])
     text_proc = nltk.Text(text.words())
@@ -90,6 +90,8 @@ def openfile(filename):
                 stems.append(stemmer.stem(tok))
             text_detailed.append({"index": cnt, "sent": sent, "words": words, "stems": stems})
             cnt = cnt + 1
+    text_vocab = set(w.lower() for w in text.words() if w.isalpha())
+    english_vocab = set(w.lower() for w in nltk.corpus.words.words()) # we can move it so it can only executed once
 
 
 ################################################################################
@@ -214,8 +216,8 @@ def freq():
     prog = re.compile(r'^[a-zA-Z][a-zA-Z\\\-]+[a-zA-Z]$')
     for tok in tokens:
         tok = tok.lower()
-        stem = stemmer.stem(tok)
         if prog.match(tok) and tok not in excl:
+            stem = stemmer.stem(tok)
             if tok not in dd[stem]:
                 dd[stem].append(tok)
             fdist[stem] += 1
@@ -231,17 +233,29 @@ def freq():
 ################################################################################
 @app.route('/unusual')
 def unusual():
-    global text, text_proc
+    global text, text_proc, text_vocab, english_vocab
     check()
-    text_vocab = set(w.lower() for w in text.words() if w.isalpha())
-    english_vocab = set(w.lower() for w in nltk.corpus.words.words())
     unusual = text_vocab.difference(english_vocab)
+    tokens = nltk.word_tokenize(text.raw())
+    stemmer = nltk.PorterStemmer()  # nltk.LancasterStemmer()
+    dd = defaultdict(list)
     fdist = FreqDist()
-    for word in text.words():
-        if word in unusual:
-            fdist[word] += 1
-    freq_sorted = sorted(fdist.items())
-    return jsonify(freq_sorted)
+    prog = re.compile(r'^[a-zA-Z][a-zA-Z\\\-]+[a-zA-Z]$')
+    for tok in tokens:
+        tok = tok.lower()
+        if prog.match(tok) and tok not in excl and tok in unusual:
+            stem = stemmer.stem(tok)
+            if tok not in dd[stem]:
+                dd[stem].append(tok)
+            fdist[stem] += 1
+    result = []
+    for stem in sorted(dd.keys()):
+            result.append({
+                "words": ' '.join(dd[stem]),
+                "count": fdist[stem],
+                "stem": stem
+            })
+    return jsonify(result)
 
 
 ################################################################################
